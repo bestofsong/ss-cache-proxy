@@ -1,6 +1,6 @@
 {
   "HOST": "0.0.0.0",
   "PORT": 9596,
-  "DOC_ROOT": "./tmp/test_doc_root",
-  "SERVER_BIN": "./../test/server"
+  "DOC_ROOT": "tmp/test_doc_root",
+  "SERVER_BIN": "build/server"
 }

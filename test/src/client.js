@@ -9,7 +9,7 @@ const { DOC_ROOT } = require('../config.json');
 const HOST = 'localhost';
 const PORT = 8687;
 const TARGET = '/test/file.txt';
-const CLIENT_BIN = './../test/client';
+const CLIENT_BIN = 'build/client';
 
 function startServer() {
   const server = http.createServer(async function(req, res) {

@@ -69,3 +69,5 @@ node_modules
 **/.idea/*.iws
 /src/cacheproxy/config.h
 /build
+/test/build
+/test/dist

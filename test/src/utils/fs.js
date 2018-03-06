@@ -10,15 +10,19 @@ export const fsReadFile = util.promisify(fs.readFile);
 
 
 export async function createDir(dir) {
-  const exists = await fsExists(dir);
-  if (exists) {
-    return;
+  try {
+      const exists = await fsExists(dir);
+      if (exists) {
+          return;
+      }
+      const parent = path.dirname(dir);
+      if (parent) {
+          await createDir(parent);
+      }
+      await fsMkdir(dir);
+  } catch (e) {
+      console.error('failed to createDir', dir, e.message());
   }
-  const parent = dir.replace(/\/[^/]+$/, '');
-  if (parent) {
-    await createDir(parent);
-  }
-  await fsMkdir(dir);
 }
 
 
