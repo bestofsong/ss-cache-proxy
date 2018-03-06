@@ -1,5 +1,6 @@
 #ifndef CACHEPROXY_H
 #define CACHEPROXY_H
+#include <cacheproxy/config.h>
 #include <cacheproxy/server/server.h>
 #include <cacheproxy/handlers/file_handler.h>
 #include <stdio.h>

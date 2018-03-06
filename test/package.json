@@ -1,0 +1,21 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "test cache proxy involving a http client and http server",
+  "scripts": {
+    "test": "npm run build && node_modules/.bin/babel-tape-runner dist/*.js | node_modules/.bin/tap-spec",
+    "build": "[ -d dist ] && rm -rf dist ; mkdir dist ;  node_modules/.bin/babel src --out-dir dist"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-preset-env": "1.6.1",
+    "babel-tape-runner": "2.0.1",
+    "tap-spec": "4.1.1",
+    "tape": "4.9.0"
+  },
+  "dependencies": {
+    "axios": "0.18.0"
+  }
+}

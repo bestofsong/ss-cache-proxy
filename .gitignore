@@ -54,7 +54,6 @@ Makefile
 /config.sub
 /config.guess
 /test-driver
-src/cache-proxy/CacheProxy.h
 /src/third-party/boost_1_66_0
 /**/.libs
 /libtool
@@ -68,3 +67,5 @@ node_modules
 **/.idea/workspace.xml
 **/.idea/tasks.xml
 **/.idea/*.iws
+/src/cacheproxy/config.h
+/build
