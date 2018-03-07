@@ -65,6 +65,8 @@ class connection_manager
   private:
   io_context &m_ioc;
   std::map<string, shared_ptr<void>> m_connections;
+  connection_manager(connection_manager& ioc) = delete;
+  connection_manager&operator=(connection_manager &) = delete;
 
   shared_ptr<void> get_connection(const string&key) {
     auto it = m_connections.find(key);

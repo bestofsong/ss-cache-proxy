@@ -23,10 +23,6 @@ test('[server: ] can serve plain text file to axios client', async function (t) 
       t.fail(`failed to prepare test, e: ${e.message}`);
     }
 
-    serverProc.stdout.on('data', (msg) => {
-      console.log('serverProc.stdout: ', msg.toString());
-    });
-
     for (let ii = 0; ii < TEST_FILES.length; ii++) {
       const TEST_FILE = TEST_FILES[ii];
       const TEST_CONTENT = TEST_CONTENTS[ii];
