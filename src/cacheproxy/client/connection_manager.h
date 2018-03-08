@@ -29,12 +29,10 @@ class connection_manager
 
   template <typename RequestBody, typename ResponseBody>
   void get(
-      const string &host,
+    request_t <RequestBody> &&req,
       const string &port,
-      const string &target,
-      int version,
       request_callback_t<RequestBody, ResponseBody>&& callback){
-    const string key = make_request_key(host, port, target);
+    const string key = make_request_key(req, port);
 
     shared_ptr<void> conn = get_connection(key);
     connection<RequestBody, ResponseBody> *ptr = nullptr;
@@ -58,7 +56,8 @@ class connection_manager
 
     conn.swap(new_conn);
     ptr = static_cast<connection<RequestBody, ResponseBody> *>(conn.get());
-    ptr ->run(host, port, target, version);
+
+    ptr ->run(std::move(req), port);
   }
 
 

@@ -29,9 +29,6 @@ namespace smartstudy {
 
   class CacheProxy {
   public:
-    string& Version() { static string v{"1.0.0"}; return v; }
-
-  public:
     bool start(const string& addr, unsigned short port, const string& docroot) {
       create_server(addr, port, docroot);
       io_context& ioc = *pioc;

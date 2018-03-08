@@ -31,23 +31,18 @@ class connection_base
       register_callback(std::move(callback));
     }
 
-  // fixme: m_req is currently supposed to be empty_body type, maybe generalize it?
-  void run(const string &host, const string &port, const string &target, int version) {
-    m_req.version(version);
-    m_req.method(http::verb::get);
-    m_req.target(target);
-    m_req.set(http::field::host, host);
+  void run(request_t<RequestBody> &&req, const string &port) {
+    m_req = std::move(req);
     m_req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
     m_resolver.async_resolve(
-        host,
-        port,
-        std::bind(
-          &connection_base::on_resolve,
-          this,
-          std::placeholders::_1,
-          std::placeholders::_2));
+      m_req[http::field::host].to_string(),
+      port,
+      std::bind(
+        &connection_base::on_resolve,
+        this,
+        std::placeholders::_1,
+        std::placeholders::_2));
   }
-
 
   void register_callback(request_callback_type &&cb) {
     m_callbacks.push_back(cb);

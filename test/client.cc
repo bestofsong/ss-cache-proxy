@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <map>
 #include <string>
 #include <cacheproxy/client/connection_manager.h>
 
@@ -25,7 +26,7 @@ int main(int argc, char** argv) {
   auto const port = argv[2];
   auto const target = argv[3];
   auto const content = argv[4];
-  int version = 11; //fixme: how to choose
+  int version = 11;
 
   boost::asio::io_context ioc{1};
   smartstudy::connection_manager cm(ioc);
@@ -44,8 +45,20 @@ int main(int argc, char** argv) {
     resp_text = resp.body();
   };
 
-  cm.get(host, port, target, version, std::move(cb));
+  std::map<std::string, std::string> headers;
 
+  smartstudy::request_t <http::empty_body> req;
+  {
+    req.set(http::field::host, host);
+    req.method(http::verb::get);
+    req.target(target);
+    req.version(version);
+    for (const auto &kv: headers) {
+      req.set(http::string_to_field(kv.first), kv.second);
+    }
+  }
+
+  cm.get(std::move(req), port, std::move(cb));
   ioc.run();
   return resp_text == content ? 0 : -1;
 }

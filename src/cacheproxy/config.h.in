@@ -1,0 +1,10 @@
+//
+// Created by wansong on 06/03/2018.
+//
+
+#ifndef CACHE_PROXY_CONFIG_H
+#define CACHE_PROXY_CONFIG_H
+
+#define CACHE_PROXY_VERSION "@PROJECT_VERSION@"
+
+#endif //CACHE_PROXY_CONFIG_H

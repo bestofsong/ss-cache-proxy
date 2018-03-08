@@ -7,10 +7,10 @@ set(THIRD_PARTY_DIR ${PROJECT_SOURCE_DIR}/src/third-party)
 set(SQLITE3CPP_DIR ${THIRD_PARTY_DIR}/sqlite3cpp)
 set(TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 
-include_directories(${CACHE_PROXY_SRC_DIR})
-include_directories(${THIRD_PARTY_DIR}/boost_1_66_0)
-include_directories(${THIRD_PARTY_DIR}/sqlite3cpp/sqlite3)
-include_directories(${THIRD_PARTY_DIR}/sqlite3cpp/include)
+include_directories(./src)
+include_directories(./src/third-party/boost_1_66_0)
+include_directories(./src/third-party/sqlite3cpp/sqlite3)
+include_directories(./src/third-party/sqlite3cpp/include)
 
 configure_file("${CACHE_PROXY_DIR}/config.h.in" "${CACHE_PROXY_DIR}/config.h")
 
@@ -22,7 +22,7 @@ add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
 add_definitions(-DSQLITE_ENABLE_COLUMN_METADATA)
 
 
-add_executable(client ${TEST_DIR}/client.cc ${CACHE_PROXY_DIR}/cache/utils.cc)
+add_executable(client ${TEST_DIR}/client.cc)
 add_executable(server ${TEST_DIR}/server.cc)
 
 set(SQLITE3CPP_SRC_DIR ${THIRD_PARTY_DIR}/sqlite3cpp/src)
