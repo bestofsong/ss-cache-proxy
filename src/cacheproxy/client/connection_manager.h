@@ -32,7 +32,7 @@ class connection_manager
     request_t <RequestBody> &&req,
       const string &port,
       request_callback_t<RequestBody, ResponseBody>&& callback){
-    const string key = make_request_key(req, port);
+    const string key = make_cache_key(req, port);
 
     shared_ptr<void> conn = get_connection(key);
     connection<RequestBody, ResponseBody> *ptr = nullptr;

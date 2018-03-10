@@ -22,8 +22,8 @@ add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
 add_definitions(-DSQLITE_ENABLE_COLUMN_METADATA)
 
 
-add_executable(client ${TEST_DIR}/client.cc)
-add_executable(server ${TEST_DIR}/server.cc)
+add_executable(client ${TEST_DIR}/client.cc src/cacheproxy/cache/http_cache_manager.h)
+add_executable(server ${TEST_DIR}/server.cc src/cacheproxy/cache/http_cache_manager.h)
 
 set(SQLITE3CPP_SRC_DIR ${THIRD_PARTY_DIR}/sqlite3cpp/src)
 set(SQLITE3CPP_SRCS ${SQLITE3CPP_SRC_DIR}/Backup.cpp ${SQLITE3CPP_SRC_DIR}/Column.cpp ${SQLITE3CPP_SRC_DIR}/Database.cpp ${SQLITE3CPP_SRC_DIR}/Exception.cpp ${SQLITE3CPP_SRC_DIR}/Statement.cpp ${SQLITE3CPP_SRC_DIR}/Transaction.cpp)

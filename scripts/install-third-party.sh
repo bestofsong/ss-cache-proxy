@@ -8,7 +8,14 @@ else
 fi
 
 script_root=`dirname "${script_path}"`
-project_root=`dirname "${script_root}"`
+source "${script_root}/normalize.sh"
+
+project_root=`dirname $(normalize "$script_root")`
+
+
+# sqlite3cpp
+echo "update submodule"
+"${script_root}/install-sqlite3cpp.sh"
 
 third_party_dir="${project_root}/src/third-party"
 [ ! -d "${third_party_dir}" ] && mkdir -p "${third_party_dir}"

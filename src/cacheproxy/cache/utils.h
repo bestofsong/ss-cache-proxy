@@ -8,11 +8,11 @@
 namespace smartstudy {
   using std::string;
 template <typename RequestBody>
-  string make_request_key(
-      const request_t <RequestBody> &req,
-      const string &port,
-      const string &vary = ""
-      ) {
+  string make_cache_key(
+    const request_t <RequestBody> &req,
+    const string &port,
+    const string &vary = ""
+  ) {
   return req[http::field::host].to_string() + "-"
          + port + '-'
          + req.target().to_string();
