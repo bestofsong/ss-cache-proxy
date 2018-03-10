@@ -1,6 +1,6 @@
 #ifndef CACHEPROXY_SERVER_SERVER_H
 #define CACHEPROXY_SERVER_SERVER_H
-#include <cacheproxy/handlers/file_handler.h>
+#include <cacheproxy/server/handlers/file_handler.h>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>

@@ -2,7 +2,7 @@
 #define CACHEPROXY_H
 #include <cacheproxy/config.h>
 #include <cacheproxy/server/server.h>
-#include <cacheproxy/handlers/file_handler.h>
+#include <cacheproxy/server/handlers/file_handler.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <pthread.h>
