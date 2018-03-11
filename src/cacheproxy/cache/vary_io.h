@@ -22,7 +22,7 @@ public:
 // { '\0' }代表没有vary（缺省）；
 // { 'null' }代表不支持缓存；
 // 其他取值代表支持相应的content-negotiation
-  static void get(const std::string &url, std::vector<std::string> &ret) {
+  static void query(const std::string &url, std::vector<std::string> &ret) {
     std::string vary = get_vary(url);
     if (vary == "null") {
       ret = std::vector<std::string>();

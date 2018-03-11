@@ -30,5 +30,5 @@ set(SQLITE3CPP_SRCS ${SQLITE3CPP_SRC_DIR}/Backup.cpp ${SQLITE3CPP_SRC_DIR}/Colum
 
 add_executable(sqlite ${TEST_DIR}/sqlite.cc ${SQLITE3CPP_DIR}/sqlite3/sqlite3.c ${SQLITE3CPP_SRCS})
 
-add_executable(header ${TEST_DIR}/header.cc src/cacheproxy/http/header.h)
+add_executable(header ${TEST_DIR}/header.cc src/cacheproxy/http/header.h src/cacheproxy/http/header.cc src/cacheproxy/http/header.h src/cacheproxy/utils/string.cc src/cacheproxy/utils/string.h)
 #target_compile_definitions(header PRIVATE CATCH_CONFIG_MAIN)

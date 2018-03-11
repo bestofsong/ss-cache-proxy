@@ -6,17 +6,22 @@ fi
 
 test_sub_proj="${scripts_dir}/../test"
 
-cd "$test_sub_proj"
-[ ! -d node_modules ] && yarn install
-[ ! -d build ] && mkdir build
-cd build
-cmake ../..
-make
-if [ $? -ne 0 ] ; then
-  exit -1
-fi
+for config in Debug Release ; do
+  echo "Using Configuration: $config"
+  cd "$test_sub_proj"
+  [ ! -d node_modules ] && yarn install
+  [ ! -d build ] && mkdir build
+  cd build
 
-${scripts_dir}/native_tests.sh "${test_sub_proj}/build"
+  cmake -DCMAKE_BUILD_TYPE=$config ../..
+  make
+  if [ $? -ne 0 ] ; then
+    exit -1
+  fi
 
-cd "${test_sub_proj}"
-npm test
+  ${scripts_dir}/native_tests.sh "${test_sub_proj}/build"
+
+  cd "${test_sub_proj}"
+  npm test
+done
+
