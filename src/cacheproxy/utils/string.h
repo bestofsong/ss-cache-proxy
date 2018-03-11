@@ -11,6 +11,8 @@ namespace smartstudy {
 
 void snakecase(std::string &ret);
 
+void split(const std::string &str, const char delim, std::vector<std::string> &ret);
+
 }
 
 

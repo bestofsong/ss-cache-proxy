@@ -17,29 +17,13 @@ void snakecase(std::string &ret) {
       c = '_';
     } else if (c >= 'A' && c <= 'Z') {
       c = c - 'A' + 'a';
-    } else {
-      if (c < 'a' || c > 'z') {
-        std::cout << "invalid character in header name: " << ret << ": " << c << std::endl;
-        assert(false);
-      }
     }
   }
-}
-
-
-// @private
-size_t quote_count(const std::string &str) {
-  size_t ret = 0;
-  for (auto& c: str) {
-    if (c == '"') {
-      ret += 1;
-    }
-  }
-  return ret;
 }
 
 
 void split(const std::string &str, const char delim, std::vector<std::string> &ret) {
+  ret.clear();
   if (str.empty()) {
     return;
   }
@@ -49,7 +33,6 @@ void split(const std::string &str, const char delim, std::vector<std::string> &r
 
   while (std::getline(ss, item, delim)) {
     boost::trim(item);
-    snakecase(item);
     ret.emplace_back(std::move(item));
   }
 }
