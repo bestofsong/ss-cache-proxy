@@ -13,7 +13,7 @@
 #include <string>
 #include <map>
 #include <cacheproxy/client/connection.h>
-#include <cacheproxy/cache/utils.h>
+#include <cacheproxy/cache/http_cache_manager.h>
 
 
 namespace smartstudy {
@@ -28,11 +28,11 @@ class connection_manager
   explicit connection_manager(io_context& ioc): m_ioc(ioc) {}
 
   template <typename RequestBody, typename ResponseBody>
-  void get(
+  void request(
     request_t <RequestBody> &&req,
       const string &port,
       request_callback_t<RequestBody, ResponseBody>&& callback){
-    const string key = make_cache_key(req, port);
+    const string key = http_cache_manager::make_cache_key(req, port);
 
     shared_ptr<void> conn = get_connection(key);
     connection<RequestBody, ResponseBody> *ptr = nullptr;

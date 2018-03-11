@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  cm.get(std::move(req), port, std::move(cb));
+  cm.request(std::move(req), port, std::move(cb));
   ioc.run();
   return resp_text == content ? 0 : -1;
 }

@@ -26,6 +26,9 @@ add_executable(client ${TEST_DIR}/client.cc src/cacheproxy/cache/http_cache_mana
 add_executable(server ${TEST_DIR}/server.cc src/cacheproxy/cache/http_cache_manager.h)
 
 set(SQLITE3CPP_SRC_DIR ${THIRD_PARTY_DIR}/sqlite3cpp/src)
-set(SQLITE3CPP_SRCS ${SQLITE3CPP_SRC_DIR}/Backup.cpp ${SQLITE3CPP_SRC_DIR}/Column.cpp ${SQLITE3CPP_SRC_DIR}/Database.cpp ${SQLITE3CPP_SRC_DIR}/Exception.cpp ${SQLITE3CPP_SRC_DIR}/Statement.cpp ${SQLITE3CPP_SRC_DIR}/Transaction.cpp)
+set(SQLITE3CPP_SRCS ${SQLITE3CPP_SRC_DIR}/Backup.cpp ${SQLITE3CPP_SRC_DIR}/Column.cpp ${SQLITE3CPP_SRC_DIR}/Database.cpp ${SQLITE3CPP_SRC_DIR}/Exception.cpp ${SQLITE3CPP_SRC_DIR}/Statement.cpp ${SQLITE3CPP_SRC_DIR}/Transaction.cpp src/cacheproxy/cache/vary_io.h src/cacheproxy/http/header.h)
 
 add_executable(sqlite ${TEST_DIR}/sqlite.cc ${SQLITE3CPP_DIR}/sqlite3/sqlite3.c ${SQLITE3CPP_SRCS})
+
+add_executable(header ${TEST_DIR}/header.cc src/cacheproxy/http/header.h)
+#target_compile_definitions(header PRIVATE CATCH_CONFIG_MAIN)

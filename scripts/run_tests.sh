@@ -16,5 +16,7 @@ if [ $? -ne 0 ] ; then
   exit -1
 fi
 
+${scripts_dir}/native_tests.sh "${test_sub_proj}/build"
+
 cd "${test_sub_proj}"
 npm test
