@@ -9,7 +9,6 @@
 int main() {
   std::string str = " text/plain ; q = 0.5 ; charset = \"utf-16\"";
   std::smatch sm;
-  return 0;
   while (true) {
     std::cout << "result for: " << str << std::endl;
     if (std::regex_match(str, sm, smartstudy::get_http_field_re())) {

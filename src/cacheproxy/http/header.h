@@ -23,7 +23,7 @@ typedef std::vector<std::string> string_vector;
 typedef std::vector<string_map> field_value;
 
 const std::regex &get_http_field_re();
-void parse_vary(const std::string &vary, string_vector &ret);
+
 void parse_http_field(const std::string &value, field_value &ret);
 
 }

@@ -32,7 +32,7 @@ public:
       ret = { "" };
     }
 
-    parse_vary(vary, ret);
+    // todo: parse_http_field
   }
 
 private:

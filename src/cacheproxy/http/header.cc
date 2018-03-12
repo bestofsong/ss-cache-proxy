@@ -9,25 +9,6 @@
 
 namespace smartstudy {
 
-void parse_vary(const std::string &vary, std::vector<std::string> &ret) {
-  std::stringstream ss(vary);
-  std::string item;
-
-  static const char delim = ',';
-
-  while (std::getline(ss, item, delim)) {
-    if (item == "") continue;
-
-    std::cout << "a line: " << item << "|" << std::endl;
-    boost::trim(item);
-    snakecase(item);
-    ret.emplace_back(std::move(item));
-  }
-
-  std::cout << "done" << std::endl;
-}
-
-
 // @private
 size_t quote_count(const std::string &str) {
   size_t ret = 0;
