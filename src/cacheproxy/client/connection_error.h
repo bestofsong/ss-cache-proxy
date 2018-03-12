@@ -1,7 +1,8 @@
 #ifndef CONNECTION_ERROR_H
 #define CONNECTION_ERROR_H
 
-#include <boost/systeom/error_code>
+#include <boost/system/error_code.hpp>
+
 namespace smartstudy {
   using boost::system::error_category;
 
