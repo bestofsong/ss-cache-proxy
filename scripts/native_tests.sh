@@ -8,4 +8,5 @@ fi
 test_bin_dir=$1
 
 ${test_bin_dir}/header
+${test_bin_dir}/database
 

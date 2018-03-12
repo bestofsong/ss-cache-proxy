@@ -34,4 +34,4 @@ add_executable(regex ${TEST_DIR}/regex.cc src/cacheproxy/http/regex.cc src/cache
 add_executable(header ${TEST_DIR}/header.cc src/cacheproxy/http/header.h src/cacheproxy/http/header.cc src/cacheproxy/http/regex.cc src/cacheproxy/utils/string.cc src/cacheproxy/utils/string.h)
 #target_compile_definitions(header PRIVATE CATCH_CONFIG_MAIN)
 
-add_executable(database ${TEST_DIR}/database.cc src/cacheproxy/metadb/metadb.cc src/cacheproxy/metadb/metadb.h)
+add_executable(database ${TEST_DIR}/database.cc src/cacheproxy/metadb/metadb.cc src/cacheproxy/metadb/metadb.h ${SQLITE3CPP_DIR}/sqlite3/sqlite3.c ${SQLITE3CPP_SRCS})

@@ -6,17 +6,24 @@
 #define CACHE_PROXY_METADB_H
 
 #include <string>
+#include <cacheproxy/metadb/sqlite_error_category.h>
 
 namespace smartstudy {
 
 struct field_descriptor {
   std::string name;
   std::string type;
-  std::string foreign_key_to;
+  std::string constraints; // primary key, not null, unique, check ..., default ...
 };
 
-typedef std::vector<field_descriptor> table_descriptor;
+struct table_descriptor {
+  std::string name;
+  bool if_not_exists;
+  std::vector<field_descriptor> fields;
+  std::string constaints; // primary key
+};
 
+std::string build_sql(const table_descriptor &schema);
 
 }
 
