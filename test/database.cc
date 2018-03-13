@@ -36,5 +36,26 @@ SCENARIO( "metadb tests", "[metadb]" ) {
     db ->exec(sql.c_str());
     REQUIRE(db ->tableExists("user"));
   }
+
+  GIVEN("insert or replace into table") {
+    smartstudy::table_descriptor schema = createStudentSql();
+    std::string sql = smartstudy::build_sql(schema);
+    auto db = createTable(path);
+    REQUIRE(!db ->tableExists("user"));
+    db ->exec(sql.c_str());
+    REQUIRE(db ->tableExists("user"));
+
+    smartstudy::insert_update_descriptor insert{
+      "user",
+      { { "name", "wansong" }, { "height", "180" } }
+    };
+    const std::string sql2 = smartstudy::build_sql(insert);
+
+    SQLite::Statement stmt(*db, sql2.c_str());
+    REQUIRE(stmt.exec());
+    std::string h = db ->execAndGet("SELECT height FROM user WHERE name='wansong'");
+    REQUIRE(h == "180");
+    std::cout << h << std::endl;
+  }
 }
 

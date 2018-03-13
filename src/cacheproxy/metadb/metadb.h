@@ -35,6 +35,16 @@ struct table_descriptor {
 
 std::string build_sql(const table_descriptor &schema);
 
+
+typedef std::vector<std::tuple<std::string, std::string>> record_values;
+struct insert_update_descriptor {
+  std::string table;
+  record_values kv_pairs;
+};
+
+std::string build_sql(const insert_update_descriptor &schema);
+
+
 }
 
 #endif //CACHE_PROXY_METADB_H
