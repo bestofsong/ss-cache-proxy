@@ -11,22 +11,30 @@
 #include <assert.h>
 #include <string>
 #include <stdio.h>
+#include <memory>
 
+smartstudy::table_descriptor createStudentSql() {
+  smartstudy::field_descriptor id = { "id", "INTEGER PRIMARY KEY" };
+  smartstudy::field_descriptor name = { "name", "text unique" };
+  smartstudy::field_descriptor height = { "height", "int" };
+  return { "user", true, { id, name, height }, "" };
+}
+
+std::shared_ptr<SQLite::Database> createTable(const char *path) {
+  return std::make_shared<SQLite::Database>(path, SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE);
+}
 
 SCENARIO( "metadb tests", "[metadb]" ) {
   const char *path = "test.db";
   remove(path);
 
-  GIVEN("fresh db file") {
-    SQLite::Database db(path, SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE);
-    smartstudy::field_descriptor id = { "id", "INTEGER PRIMARY KEY" };
-    smartstudy::field_descriptor name = { "name", "text" };
-    smartstudy::table_descriptor table = { "user", true, { id, name }, "" };
-    std::string sql = smartstudy::build_sql(table);
-
-    REQUIRE(!db.tableExists("user"));
-    db.exec(sql);
-    REQUIRE(db.tableExists("user"));
+  GIVEN("create table") {
+    smartstudy::table_descriptor schema = createStudentSql();
+    std::string sql = smartstudy::build_sql(schema);
+    auto db = createTable(path);
+    REQUIRE(!db ->tableExists("user"));
+    db ->exec(sql.c_str());
+    REQUIRE(db ->tableExists("user"));
   }
 }
 
