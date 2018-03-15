@@ -7,9 +7,9 @@
 
 #include <string>
 #include <vector>
-#include <cacheproxy/metadb/sqlite_error_category.h>
 
 namespace smartstudy {
+
 
 struct field_descriptor {
   std::string name;
@@ -36,6 +36,17 @@ struct table_descriptor {
 std::string build_sql(const table_descriptor &schema);
 
 
+
+struct add_column_descriptor {
+  std::string name;
+  // only support add column
+  field_descriptor field;
+};
+
+std::string build_sql(const add_column_descriptor &schema);
+
+
+
 typedef std::vector<std::tuple<std::string, std::string>> record_values;
 struct insert_update_descriptor {
   std::string table;
@@ -43,6 +54,7 @@ struct insert_update_descriptor {
 };
 
 std::string build_sql(const insert_update_descriptor &schema);
+
 
 
 }

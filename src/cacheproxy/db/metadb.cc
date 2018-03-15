@@ -2,8 +2,10 @@
 // Created by wansong on 12/03/2018.
 //
 
-#include <cacheproxy/metadb/metadb.h>
+#include <cacheproxy/db/metadb.h>
 #include <tuple>
+#include <cassert>
+
 
 namespace smartstudy {
 
@@ -38,6 +40,27 @@ std::string build_sql(const table_descriptor &schema) {
 
   return ret;
 }
+
+
+std::string build_sql(const add_column_descriptor &schema) {
+  assert(!schema.name.empty());
+
+  std::string ret;
+  ret += "ALTER TABLE ";
+  ret += schema.name + " ";
+
+  ret += "ADD COLUMN ";
+  ret += schema.field.name + " ";
+  ret += schema.field.type;
+  if (schema.field.constraints.empty()) {
+    ret += ";";
+  } else {
+    ret += " " + schema.field.constraints + ";";
+  }
+
+  return ret;
+}
+
 
 
 std::string build_sql(const insert_update_descriptor &schema) {
