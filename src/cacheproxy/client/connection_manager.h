@@ -13,7 +13,7 @@
 #include <string>
 #include <map>
 #include <cacheproxy/client/connection.h>
-#include <cacheproxy/cache/http_cache_manager.h>
+#include <cacheproxy/proxy/http_cache_manager.h>
 
 
 namespace smartstudy {

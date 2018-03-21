@@ -21,19 +21,19 @@ struct field_descriptor {
 
 struct table_descriptor {
   std::string name;
-  bool if_not_exists;
   std::vector<field_descriptor> fields;
-  std::string constaints; // primary key
+  bool if_not_exists;
+  std::string constaints; // primary key alike
   table_descriptor(
     std::string &&n,
-    bool i,
     std::vector<field_descriptor> &&f,
-    std::string &&c):
-      name(std::move(n)), if_not_exists(i), fields(std::move(f)), constaints(std::move(c)) {}
+    bool i = true,
+    std::string &&c = ""):
+      name(std::move(n)), fields(std::move(f)), if_not_exists(i), constaints(std::move(c)) {}
   ~table_descriptor() = default;
 };
-
-std::string build_sql(const table_descriptor &schema);
+// 创建表
+std::string build_sql(const table_descriptor &schema) noexcept;
 
 
 
@@ -42,8 +42,8 @@ struct add_column_descriptor {
   // only support add column
   field_descriptor field;
 };
-
-std::string build_sql(const add_column_descriptor &schema);
+// 修改表：增加列
+std::string build_sql(const add_column_descriptor &schema) noexcept ;
 
 
 
@@ -52,8 +52,8 @@ struct insert_update_descriptor {
   std::string table;
   record_values kv_pairs;
 };
-
-std::string build_sql(const insert_update_descriptor &schema);
+// 插入或更新
+std::string build_sql(const insert_update_descriptor &schema) noexcept;
 
 
 

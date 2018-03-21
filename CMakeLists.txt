@@ -22,11 +22,11 @@ add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
 add_definitions(-DSQLITE_ENABLE_COLUMN_METADATA)
 
 
-add_executable(client ${TEST_DIR}/client.cc src/cacheproxy/cache/http_cache_manager.h)
-add_executable(server ${TEST_DIR}/server.cc src/cacheproxy/cache/http_cache_manager.h)
+add_executable(client ${TEST_DIR}/client.cc src/cacheproxy/proxy/http_cache_manager.h)
+add_executable(server ${TEST_DIR}/server.cc src/cacheproxy/proxy/http_cache_manager.h)
 
 set(SQLITE3CPP_SRC_DIR ${THIRD_PARTY_DIR}/sqlite3cpp/src)
-set(SQLITE3CPP_SRCS ${SQLITE3CPP_SRC_DIR}/Backup.cpp ${SQLITE3CPP_SRC_DIR}/Column.cpp ${SQLITE3CPP_SRC_DIR}/Database.cpp ${SQLITE3CPP_SRC_DIR}/Exception.cpp ${SQLITE3CPP_SRC_DIR}/Statement.cpp ${SQLITE3CPP_SRC_DIR}/Transaction.cpp src/cacheproxy/cache/vary_io.h src/cacheproxy/http/header.h)
+set(SQLITE3CPP_SRCS ${SQLITE3CPP_SRC_DIR}/Backup.cpp ${SQLITE3CPP_SRC_DIR}/Column.cpp ${SQLITE3CPP_SRC_DIR}/Database.cpp ${SQLITE3CPP_SRC_DIR}/Exception.cpp ${SQLITE3CPP_SRC_DIR}/Statement.cpp ${SQLITE3CPP_SRC_DIR}/Transaction.cpp src/cacheproxy/http/header.h)
 
 add_executable(sqlite ${TEST_DIR}/sqlite.cc ${SQLITE3CPP_DIR}/sqlite3/sqlite3.c ${SQLITE3CPP_SRCS})
 add_executable(regex ${TEST_DIR}/regex.cc src/cacheproxy/http/regex.cc src/cacheproxy/http/regex.h)
@@ -34,4 +34,5 @@ add_executable(regex ${TEST_DIR}/regex.cc src/cacheproxy/http/regex.cc src/cache
 add_executable(header ${TEST_DIR}/header.cc src/cacheproxy/http/header.h src/cacheproxy/http/header.cc src/cacheproxy/http/regex.cc src/cacheproxy/utils/string.cc src/cacheproxy/utils/string.h)
 #target_compile_definitions(header PRIVATE CATCH_CONFIG_MAIN)
 
-add_executable(database ${TEST_DIR}/database.cc src/cacheproxy/db/metadb.cc src/cacheproxy/db/metadb.h ${SQLITE3CPP_DIR}/sqlite3/sqlite3.c ${SQLITE3CPP_SRCS})
+add_executable(database ${TEST_DIR}/database.cc src/cacheproxy/http/regex.cc src/cacheproxy/http/header.cc src/cacheproxy/utils/string.cc src/cacheproxy/utils/sqlite_utils.cc src/cacheproxy/db/metadb.cc src/cacheproxy/db/metadb.h src/cacheproxy/proxy/sqlite_persist.cc src/cacheproxy/proxy/sqlite_persist.h ${SQLITE3CPP_DIR}/sqlite3/sqlite3.c ${SQLITE3CPP_SRCS})
+target_compile_definitions(database PRIVATE SS_TEST)

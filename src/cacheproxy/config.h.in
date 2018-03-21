@@ -7,4 +7,6 @@
 
 #define CACHE_PROXY_VERSION "@PROJECT_VERSION@"
 
+static const char *SS_CACHEPROXY_RESPONSE_TABLE = "response";
+
 #endif //CACHE_PROXY_CONFIG_H

@@ -6,12 +6,17 @@
 #define CACHE_PROXY_STRING_H
 
 #include <string>
+#include <set>
 
 namespace smartstudy {
 
 void snakecase(std::string &ret);
 
+std::string snakecase(const std::string &ret);
+
 void split(const std::string &str, const char delim, std::vector<std::string> &ret);
+
+std::string escape_using(const std::string &str, const char &escape, std::set<char> &charsToEscape);
 
 }
 

@@ -24,7 +24,11 @@ typedef std::vector<string_map> field_value;
 
 const std::regex &get_http_field_re();
 
+void parse_range(const std::string& range, unsigned long& first, unsigned long& last);
+void parse_content_range(const std::string& range, unsigned long& first, unsigned long& last, unsigned long& total);
 void parse_http_field(const std::string &value, field_value &ret);
+
+bool is_same_header(const std::string &a, const std::string &b);
 
 }
 

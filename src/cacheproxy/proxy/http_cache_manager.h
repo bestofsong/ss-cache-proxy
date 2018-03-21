@@ -17,7 +17,7 @@
 #include <string>
 #include <map>
 #include <cacheproxy/client/connection.h>
-#include <cacheproxy/cache/vary_io.h>
+#include "sqlite_persist.h"
 
 
 namespace smartstudy {
@@ -26,10 +26,13 @@ using boost::asio::io_context;
 using std::string;
 using std::shared_ptr;
 
+
 class http_cache_manager {
 public:
+  http_cache_manager(const char *path): persist(new sqlite_persist(path)) {}
+
   void initialize() {
-    vary_io::init();
+    persist ->initialize();
   }
 
   template <typename RequestBody>
@@ -43,7 +46,10 @@ public:
            + req.target().to_string();
   }
 
+private:
+  std::shared_ptr<sqlite_persist> persist;
 };
+
 
 }
 

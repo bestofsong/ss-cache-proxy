@@ -21,6 +21,12 @@ void snakecase(std::string &ret) {
   }
 }
 
+std::string snakecase(const std::string &input) {
+  std::string ret(input);
+  snakecase(ret);
+  return ret;
+}
+
 
 void split(const std::string &str, const char delim, std::vector<std::string> &ret) {
   ret.clear();

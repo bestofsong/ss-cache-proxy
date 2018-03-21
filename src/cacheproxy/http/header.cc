@@ -130,5 +130,39 @@ void parse_http_field(const std::string &value, field_value &ret) {
   }
 }
 
+
+
+bool is_same_header(const std::string &a, const std::string &b) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+
+  for (auto i = 0; i < a.size(); i++) {
+    if (a[i] == '-' || a[i] == '_') {
+      if (b[i] != '-' && b[i] != '_') {
+        return false;
+      }
+      continue;
+    }
+
+    if (tolower(a[i]) != tolower(b[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+void parse_range(const std::string& range, std::vector<std::pair<long long, long long>> &ret) {
+  // todo
+}
+
+
+void parse_content_range(const std::string& range, long long& first, long long& last, long long& total) {
+  // todo
+}
+
+
 }
 
