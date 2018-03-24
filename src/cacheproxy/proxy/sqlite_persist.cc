@@ -153,16 +153,6 @@ std::string sqlite_persist::query_vary(const cache_request_t &req) {
   return db ->execAndGet(sql);
 }
 
-
-void add_join_clause(std::string &ret) {
-  std::string join_clause = "LEFT JOIN vary ";
-  join_clause.append("ON ");
-  join_clause.append(SS_CACHEPROXY_RESPONSE_TABLE);
-  join_clause.append(".vary = vary.id");
-  ret += join_clause;
-}
-
-
 template <typename Callback>
 void traverse_vary_fields(
   const field_value& vary_parsed,
@@ -176,8 +166,6 @@ void traverse_vary_fields(
       a_vary.cend(),
       [](const map_entry&pair){ return pair.first == "value"; }) ->second;
     assert(!variable_header.empty());
-
-    const std::string variable_header_resp = to_response_counterpart(variable_header);
 
     const auto p_vary_value = std::find_if(
       req.headers.cbegin(),
@@ -195,7 +183,6 @@ void traverse_vary_fields(
   }
 }
 
-
 void add_where_clause(
   const field_value& vary_parsed,
   const cache_request_t& req,
@@ -210,33 +197,30 @@ void add_where_clause(
 
 
   traverse_vary_fields(vary_parsed, req, [&ret, &req](const std::string& vary_field, const std::string &_) {
-    const std::string vary_field_resp = to_response_counterpart(vary_field);
     if (is_same_header(vary_field, "range")) {
-      const auto p_vary_value = std::find_if(
-        req.headers.cbegin(),
-        req.headers.cend(),
-        [](const std::pair<std::string, std::string>& pair) { return pair.first == "range"; }
-      );
-      char buf[100];
-      // 如果request不指定range，就不对range筛选
-      if (p_vary_value != req.headers.cend()) {
-        unsigned long first, last;
-        parse_range(p_vary_value ->second, first, last);
-        sprintf(buf, "\"content-range1\" >= %lu AND \"content-range0\" <= %lu AND ", first, last);
-        ret += buf;
-      }
-    } else {
-      ret += to_sqlite_identifier(vary_field_resp) + " LIKE ? ESCAPE '\\' AND ";
+      return false;
     }
+    const std::string vary_field_resp = to_response_counterpart(vary_field);
+    ret += to_sqlite_identifier(vary_field_resp) + " LIKE ? ESCAPE '\\' AND ";
     return false;
   });
 
-  if (ret.substr(ret.size() - 5) == " AND ") {
-    ret.replace(ret.size() - 5, 5, ";");
+  const auto p_vary_value = std::find_if(
+    req.headers.cbegin(),
+    req.headers.cend(),
+    [](const std::pair<std::string, std::string>& pair) { return pair.first == "range"; }
+  );
+  char buf[100];
+  // 如果request不指定range，就不对range筛选
+  if (p_vary_value != req.headers.cend()) {
+    unsigned long first, last;
+    parse_range(p_vary_value ->second, first, last);
+    sprintf(buf, "\"content-range1\" >= %lu AND \"content-range0\" <= %lu AND ", first, last);
+    ret += buf;
   }
 
-  if (ret.substr(ret.size() - 6) == "WHERE ") {
-    ret.replace(ret.size() - 6, 6, ";");
+  if (ret.substr(ret.size() - 5) == " AND ") {
+    ret.replace(ret.size() - 5, 5, ";");
   }
 }
 
@@ -244,7 +228,6 @@ void add_where_clause(
 
 template <typename Callback>
 bool permute_bind(
-  const field_value& vary_parsed,
   const cache_request_t& req,
   SQLite::Statement& stmt,
   const std::vector<std::pair<std::string, field_value>> &vary_kvs,
@@ -276,9 +259,9 @@ bool permute_bind(
       field_value_piece[i] = fv[i];
     }
 
-    bool done = permute_bind(vary_parsed, req, stmt, vary_kvs, field_value_piece, whichField + 1, cb);
+    bool done = permute_bind(req, stmt, vary_kvs, field_value_piece, whichField + 1, cb);
     if (done) {
-      return false;
+      return true;
     }
   }
   return false;
@@ -316,8 +299,8 @@ void sqlite_persist::get_cache_response(
   }
 
   field_value vary_parsed;
-  parse_http_field(vary, vary_parsed);
   // todo: sort against q
+  parse_http_field(vary, vary_parsed);
 
   // 拼接sql
   std::string sql = std::string("SELECT * FROM ") + SS_CACHEPROXY_RESPONSE_TABLE + " ";
@@ -339,7 +322,7 @@ void sqlite_persist::get_cache_response(
   }
 
 
-  // 获取vary列表每一项及其所指向的header的值，构成的pair的数组
+  // 获取vary列表每一项及其在request里得值的pair
   std::vector<std::pair<std::string, field_value>> vary_field_value_pairs;
   traverse_vary_fields(vary_parsed, req, [&vary_field_value_pairs](const std::string& field, const std::string& value) {
     assert(!value.empty());
@@ -353,7 +336,7 @@ void sqlite_persist::get_cache_response(
   // bind参数：只考虑vary每一项对应的header值，如果有参数的话还需要利用filter_result_set进一步筛选
   try {
     std::vector<string_map> field_value_pieces;
-    permute_bind(vary_parsed, req, stmt, vary_field_value_pairs, field_value_pieces, 0, [&stmt, &req, &resp]() {
+    permute_bind(req, stmt, vary_field_value_pairs, field_value_pieces, 0, [&stmt, &req, &resp]() {
       std::vector<string_map> rows = extract_row(stmt);
       filter_result_set(req, rows);
       if (!rows.empty()) {
@@ -373,7 +356,6 @@ void sqlite_persist::set_cache_response(
   const cache_request_t &req, const cache_response_t &resp) {
   // todo
 }
-
 
 
 }
