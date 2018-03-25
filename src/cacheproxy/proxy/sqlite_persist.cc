@@ -12,6 +12,7 @@
 #include <string>
 #include <cacheproxy/utils/sqlite_utils.h>
 #include <cacheproxy/http/header.h>
+#include <third-party/sqlite3cpp/include/SQLiteCpp/Transaction.h>
 
 
 namespace smartstudy {
@@ -26,12 +27,12 @@ std::string escape_for_sqlite(const std::string &str) {
 }
 
 
-// 其他的header在运行时自动添加
 static std::map<std::string, std::map<std::string, std::string>> HEADER_FIELDS = {
+  { "version", {} },
   { "method", {} },
   { "host", {} },
   { "path", {} },
-  { "vary", { { "id", "INTEGER PRIMARY KEY" }, { "host", "TEXT" }, { "path", "TEXT" }, { "value", "TEXT" } }},
+  { "vary", { { "type", "INTEGER" }, { "constraint", "UNIQUE" } } },
   { "age", {} },
   { "allow", {} },
 
@@ -46,17 +47,22 @@ static std::map<std::string, std::map<std::string, std::string>> HEADER_FIELDS =
   { "x-forwarded-host", {} },
 
   { "cache-control", {}},
-  { "content-type", {}},
   { "connection", {}},
   { "keep-alive", {}},
+  // begin: supported content negotiation
+  { "content-type", {}},
   { "content-language", {}},
   { "content-encoding", {} },
+  { "cookie", {} },
+  { "content-range0", {} },
+  { "content-range1", {} },
+  { "content-range-total", {} },
+  // end: supported content negotiation
   { "content-disposition", {} },
   { "content-length", {} },
   { "content-location", {} },
   { "content-security-policy", {} },
   { "content-security-policy-report-only", {} },
-  { "cookie", {} },
   { "sourcemap", {} },
   { "strict-transport-security", {} },
   { "set-cookie", {} },
@@ -82,10 +88,18 @@ static std::map<std::string, std::map<std::string, std::string>> HEADER_FIELDS =
   { "server", {} },
   { "via", {} },
   { "warning", {} },
-  // 由content-range: 0-123/1024格式转化而来，便于查询
-  { "content-range0", {} },
-  { "content-range1", {} },
-  { "content-range-total", {} },
+};
+
+static table_descriptor vary_schema = {
+  "vary",
+  {
+    { "id", "INTEGER PRIMARY KEY" },
+    { "host", "TEXT" },
+    { "path", "TEXT" },
+    { "value", "TEXT" },
+  },
+  true,
+  "CONSTRAINT resource_unique UNIQUE (host, path)"
 };
 
 std::string to_response_counterpart(const std::string &request_header) {
@@ -116,15 +130,9 @@ void sqlite_persist::initialize() {
 }
 
 
-void sqlite_persist::create_separate_table(
-  const std::string &name, const std::map<std::string, std::string> &field_defs) {
-  std::vector<field_descriptor> fields;
-  for (const auto& kv: field_defs) {
-    fields.push_back({ to_sqlite_identifier(kv.first), kv.second });
-  }
-  table_descriptor vary_table = { to_sqlite_identifier(name), std::move(fields) };
-  auto sql = build_sql(vary_table);
-  db ->exec(sql);
+void sqlite_persist::create_vary_table() {
+  std::string sql = build_sql(vary_schema);
+  this ->db ->exec(sql);
 }
 
 
@@ -136,8 +144,13 @@ void sqlite_persist::create_record_table() {
     if (value.empty()) {
       fields.push_back({ key, "TEXT" });
     } else {
-      fields.push_back({ key, "INTEGER UNIQUE" });
-      this ->create_separate_table(key, value);
+      const auto& type = kv.second.find("type") ->second;
+      const auto& p_constraint = kv.second.find("constraint");
+      fields.push_back({
+                         key,
+                         type,
+                         p_constraint == kv.second.end() ? "" : p_constraint ->second
+                       });
     }
   }
   table_descriptor record = { SS_CACHEPROXY_RESPONSE_TABLE, std::move(fields) };
@@ -275,6 +288,7 @@ std::vector<string_map> extract_row(SQLite::Statement &stmt) {
     auto cnt = stmt.getColumnCount();
     for (auto i = 0; i < cnt; i++) {
       const std::string value = stmt.getColumn(i);
+      std::cout << "value : " << value << ", for column: " << stmt.getColumn(i) << std::endl;
       it[stmt.getColumnName(i)] = value;
     }
     ret.emplace_back(std::move(it));
@@ -283,8 +297,62 @@ std::vector<string_map> extract_row(SQLite::Statement &stmt) {
 }
 
 
-void filter_result_set(const cache_request_t& req, std::vector<string_map>& row) {
-  // todo
+void filter_result_set(const cache_request_t& req,
+                       const field_value& varies,
+                       std::vector<string_map>& row) {
+  for (auto it = row.begin(); it != row.end();) {
+    bool rejected = false;
+    for (const string_map& f: varies) {
+      const std::string header = f.find("value") ->second;
+      const std::string header_resp = to_response_counterpart(header);
+
+      auto p_request_value = req.headers.find(header);
+      if (p_request_value == req.headers.cend()) {
+        continue;
+      }
+      if (p_request_value ->second == "*" || p_request_value ->second.empty()) {
+        continue;
+      }
+
+      field_value fv;
+      parse_http_field(p_request_value ->second, fv);
+
+      auto p_response_value = it ->find(header_resp);
+
+      if (p_response_value == it ->cend() || p_response_value ->second.empty()) {
+        rejected = true;
+        break;
+      }
+
+      field_value fv_resp;
+      parse_http_field(p_response_value ->second, fv_resp);
+
+      if (std::all_of(fv.cbegin(), fv.cend(), [&fv_resp](const string_map& option) {
+        const string_map& real_field = *fv_resp.cbegin();
+        return std::any_of(option.cbegin(), option.cend(), [&real_field](const map_entry& pair) {
+          if (pair.first == "q") {
+            return false;
+          }
+
+          const auto find = real_field.find(pair.first);
+          if (find == real_field.cend() && pair.second != "*" && !pair.second.empty()) {
+            return true;
+          }
+
+          return find ->second != pair.second;
+        });
+      })) {
+        rejected = true;
+        break;
+      }
+    }
+
+    if (rejected) {
+      it = row.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 
@@ -316,7 +384,7 @@ void sqlite_persist::get_cache_response(
   SQLite::Statement stmt(*db, sql);
   if (vary.empty()) {
     std::vector<string_map> rows = extract_row(stmt);
-    filter_result_set(req, rows);
+    filter_result_set(req, vary_parsed, rows);
     resp = rows;
     return;
   }
@@ -336,9 +404,9 @@ void sqlite_persist::get_cache_response(
   // bind参数：只考虑vary每一项对应的header值，如果有参数的话还需要利用filter_result_set进一步筛选
   try {
     std::vector<string_map> field_value_pieces;
-    permute_bind(req, stmt, vary_field_value_pairs, field_value_pieces, 0, [&stmt, &req, &resp]() {
+    permute_bind(req, stmt, vary_field_value_pairs, field_value_pieces, 0, [&stmt, &req, &resp, &vary_parsed]() {
       std::vector<string_map> rows = extract_row(stmt);
-      filter_result_set(req, rows);
+      filter_result_set(req, vary_parsed, rows);
       if (!rows.empty()) {
         resp = std::move(rows);
         return true;
@@ -354,8 +422,91 @@ void sqlite_persist::get_cache_response(
 
 void sqlite_persist::set_cache_response(
   const cache_request_t &req, const cache_response_t &resp) {
-  // todo
+  SQLite::Transaction transaction(*this ->db);
+  bool has_vary = resp.find("vary") != resp.end();
+  unsigned vary_id = 0;
+  if (has_vary) {
+    vary_id = save_vary(req, resp);
+  }
+  auto p_host = resp.find("host");
+  record_values rvs = {
+    { "method", req.method },
+    { "host", p_host == resp.end() ? req.host : p_host ->second },
+    { "path", resp.find("path") ->second },
+  };
+
+  auto p_version = resp.find("version");
+  if (p_version != resp.end()) {
+    rvs.emplace_back("version", p_version ->second);
+  }
+
+  if (has_vary) {
+    if (vary_id == 0) {
+      return;
+    }
+    rvs.emplace_back("vary", req.headers.find("vary") ->second);
+  }
+
+  auto p_range = resp.find("content-range");
+  if (p_range != resp.end()) {
+    unsigned long beg, nd, total;
+    parse_content_range(p_range ->second, beg, nd, total);
+    char buf[100];
+    sprintf(buf, "%lu", beg);
+    rvs.emplace_back("content-range0", buf);
+    sprintf(buf, "%lu", nd);
+    rvs.emplace_back("content-range1", buf);
+    sprintf(buf, "%lu", total);
+    rvs.emplace_back("content-range-total", buf);
+  }
+
+  for (const auto& pair: resp) {
+    const std::string& h = pair.first;
+    const std::string& v = pair.second;
+    if (h == "vary" || h == "content-range") {
+      continue;
+    }
+
+    rvs.emplace_back(h, v);
+  }
+
+  insert_update_descriptor insert = { SS_CACHEPROXY_RESPONSE_TABLE, std::move(rvs) };
+  std::string sql = build_sql(insert);
+  auto n_rows = this ->db ->exec(sql);
+  if (n_rows <= 0) {
+    std::cout << "failed to insert resp" << std::endl;
+    return;
+  }
+  transaction.commit();
 }
 
+
+long long sqlite_persist::save_vary(
+  const cache_request_t &req, const cache_response_t &resp) {
+  auto vary = resp.find("vary") ->second;
+
+  record_values rvs{ { "value", vary } };
+  std::vector<std::string> fields { "host", "path" };
+  for (const auto& f: fields) {
+    const auto& v = resp.find(f) ->second;
+    rvs.emplace_back(f, v);
+  }
+
+  insert_update_descriptor ins{ "vary", std::move(rvs) };
+  auto sql = build_sql(ins);
+  this ->db ->exec(sql);
+
+  auto ret = this ->db ->getLastInsertRowid();
+  if (ret > 0) {
+    return ret;
+  }
+
+  std::string get_vary_sql = "SELECT id from vary where host = '";
+  get_vary_sql.append(resp.find("host") ->second);
+  get_vary_sql.append("' AND path = '");
+  get_vary_sql.append(resp.find("path") ->second);
+  get_vary_sql.append("';");
+  return this ->db ->execAndGet(get_vary_sql);
+}
 
 }

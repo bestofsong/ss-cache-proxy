@@ -45,10 +45,12 @@ private:
 #endif
 
   void create_record_table();
-  void create_separate_table(
-    const std::string &name, const std::map<std::string, std::string> &field_defs);
+  void create_vary_table();
 
   std::string query_vary(const cache_request_t &req);
+
+  long long save_vary(
+    const cache_request_t &req, const cache_response_t &resp);
 };
 
 
