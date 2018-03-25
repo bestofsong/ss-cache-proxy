@@ -153,14 +153,77 @@ bool is_same_header(const std::string &a, const std::string &b) {
   return true;
 }
 
+struct range {
+  unsigned long beg;
+  unsigned long nd;
+  bool has_beg;
+  bool has_nd;
+};
 
-void parse_range(const std::string& range, std::vector<std::pair<long long, long long>> &ret) {
-  // todo
+void parse_range_imp(range &rg, const std::string &str, std::string &buf, std::string::const_iterator &idx) {
+  const char& c = *idx;
+  if (!rg.has_beg) {
+    if (c == '-') {
+      rg.beg = buf.empty() ? RESERVED_MAX_UNSIGNED_LONG : (unsigned long)atoi(buf.c_str());
+      rg.has_beg = true;
+      buf.clear();
+    } else if (isnumber(c)) {
+      buf += c;
+    }
+  } else if (!rg.has_nd) {
+    if (isnumber(c)) {
+      buf += c;
+    }
+  }
+
+  idx += 1;
+}
+
+void parse_range(range &rg, const std::string &str) {
+  std::string buf;
+  auto idx = str.cbegin();
+  while (idx != str.cend()) {
+    parse_range_imp(rg, str, buf, idx);
+  }
+
+  if (!rg.has_beg) {
+    rg.beg = buf.empty() ? RESERVED_MAX_UNSIGNED_LONG : (unsigned long)atoi(buf.c_str());
+    rg.nd = RESERVED_MAX_UNSIGNED_LONG;
+  } else {
+    rg.nd = buf.empty() ? RESERVED_MAX_UNSIGNED_LONG : (unsigned long)atoi(buf.c_str());
+  }
+}
+
+void parse_range(const std::string& str, std::vector<std::pair<unsigned long, unsigned long>> &ret) {
+  field_value parsed;
+  parse_http_field(str, parsed);
+  for (const auto& piece: parsed) {
+    std::vector<std::string> parts;
+    range rg{ RESERVED_MAX_UNSIGNED_LONG, RESERVED_MAX_UNSIGNED_LONG, false, false };
+    parse_range(rg, piece.find("value") ->second);
+    ret.emplace_back(rg.beg, rg.nd);
+  }
 }
 
 
-void parse_content_range(const std::string& range, long long& first, long long& last, long long& total) {
-  // todo
+void parse_content_range(const std::string& str, unsigned long& first, unsigned long& last, unsigned long& total) {
+  std::vector<std::string> parts;
+  split(str, '/', parts);
+  if (parts.size() != 2) {
+    assert(false);
+    return;
+  }
+
+  range rg{ RESERVED_MAX_UNSIGNED_LONG, RESERVED_MAX_UNSIGNED_LONG, false, false };
+  parse_range(rg, parts[0]);
+  first = rg.beg;
+  last = rg.nd;
+  boost::trim(parts[1]);
+  if (parts[1] == "*") {
+    total = RESERVED_MAX_UNSIGNED_LONG;
+  } else {
+    total = (unsigned long)atoi(parts[1].c_str());
+  }
 }
 
 

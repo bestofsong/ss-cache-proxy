@@ -18,13 +18,15 @@
 
 namespace smartstudy {
 
+static const unsigned long RESERVED_MAX_UNSIGNED_LONG = (unsigned long)-1;
+
 typedef std::map<std::string, std::string> string_map;
 typedef std::vector<std::string> string_vector;
 typedef std::vector<string_map> field_value;
 
 const std::regex &get_http_field_re();
 
-void parse_range(const std::string& range, unsigned long& first, unsigned long& last);
+void parse_range(const std::string& str, std::vector<std::pair<unsigned long, unsigned long>> &ret);
 void parse_content_range(const std::string& range, unsigned long& first, unsigned long& last, unsigned long& total);
 void parse_http_field(const std::string &value, field_value &ret);
 

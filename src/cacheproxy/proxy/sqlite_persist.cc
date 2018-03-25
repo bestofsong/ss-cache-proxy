@@ -127,6 +127,7 @@ sqlite_persist::sqlite_persist(const char *path):
 
 void sqlite_persist::initialize() {
   create_record_table();
+  create_vary_table();
 }
 
 
@@ -226,10 +227,36 @@ void add_where_clause(
   char buf[100];
   // 如果request不指定range，就不对range筛选
   if (p_vary_value != req.headers.cend()) {
-    unsigned long first, last;
-    parse_range(p_vary_value ->second, first, last);
-    sprintf(buf, "\"content-range1\" >= %lu AND \"content-range0\" <= %lu AND ", first, last);
-    ret += buf;
+    std::vector<std::pair<unsigned long, unsigned long>> ranges;
+    parse_range(p_vary_value ->second, ranges);
+    if (!ranges.empty()) {
+      bool has_range = false;
+      std::string tmp;
+      for (const auto& pair: ranges) {
+        unsigned long beg = pair.first;
+        unsigned long nd = pair.second;
+        if (beg != RESERVED_MAX_UNSIGNED_LONG) {
+          sprintf(buf, "\"content-range1\" >= %lu ", beg);
+          tmp.append(buf);
+          has_range = true;
+          if (nd != RESERVED_MAX_UNSIGNED_LONG) {
+            tmp.append("AND ");
+          }
+        }
+        if (nd != RESERVED_MAX_UNSIGNED_LONG) {
+          sprintf(buf, "\"content-range0\" <= %lu ", nd);
+          tmp.append(buf);
+          has_range = true;
+        }
+        tmp  += "OR ";
+      }
+      tmp.replace(ret.size() - 4, 4, "");
+      if (has_range) {
+        ret += "( ";
+        ret.append(tmp);
+        ret += " ) AND ";
+      }
+    }
   }
 
   if (ret.substr(ret.size() - 5) == " AND ") {

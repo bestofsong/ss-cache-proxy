@@ -43,4 +43,15 @@ void split(const std::string &str, const char delim, std::vector<std::string> &r
   }
 }
 
+std::string escape_using(const std::string &str, const char &escape, std::set<char> &charsToEscape) {
+  std::string ret;
+  for (const auto& c: str) {
+    if (c == escape || charsToEscape.find(c) != charsToEscape.end()) {
+      ret += escape;
+    }
+    ret += c;
+  }
+  return ret;
+}
+
 }

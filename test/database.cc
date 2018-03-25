@@ -141,7 +141,7 @@ SCENARIO( "metadb tests", "[metadb]" ) {
   GIVEN("test sqlite_persist") {
     smartstudy::sqlite_persist sp(path);
     sp.initialize();
-    REQUIRE(sp.db ->tableExists("record"));
+    REQUIRE(sp.db ->tableExists(SS_CACHEPROXY_RESPONSE_TABLE));
     REQUIRE(sp.db ->tableExists("vary"));
   }
 }
